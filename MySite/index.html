@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Гостьовий Вхід</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Екран входу з іменем -->
+  <div class="container" id="login-screen">
+    <h2>Введіть ім’я</h2>
+    <input type="text" id="username" placeholder="Ваше ім’я" />
+    <br />
+    <button onclick="enterSite()">Увійти</button>
+  </div>
+
+  <!-- Вибір групи -->
+  <div class="container hidden" id="group-selection">
+    <h2>Створити нову групу</h2>
+    <input type="text" id="new-group-name" placeholder="Назва групи" />
+    <br />
+    <button onclick="createGroup()">Створити</button>
+
+    <h2>Або приєднатись до існуючої</h2>
+    <input type="text" id="join-group-name" placeholder="Назва групи" />
+    <br />
+    <button onclick="joinGroup()">Приєднатись</button>
+  </div>
+
+  <!-- Головне меню -->
+  <div class="container hidden" id="main-menu">
+    <nav>
+      <ul>
+        <li onclick="showSection('chat')">💬 Чат</li>
+        <li onclick="showSection('news')">📰 Новини</li>
+        <li onclick="showSection('settings')">⚙️ Налаштування</li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Чат -->
+  <div id="chat-section" class="container hidden" style="display: flex; flex-direction: column;">
+    <h2 id="chat-header"></h2>
+    <div id="chat-messages"></div>
+    <input type="text" id="message-input" placeholder="Введіть повідомлення..." />
+    <button onclick="sendMessage()">Відправити</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
