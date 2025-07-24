@@ -1,9 +1,7 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import {
-  getDatabase, ref, set, push, onValue, remove, update
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+// script.js
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, set, push, onValue, remove } from "firebase/database";
 
-// 🔧 Firebase конфіг
 const firebaseConfig = {
   apiKey: "AIzaSyA2OlOHug5WwibrhxqrQJ4YbDa5rsL6Jfw",
   authDomain: "vitchatfun.firebaseapp.com",
@@ -11,209 +9,317 @@ const firebaseConfig = {
   projectId: "vitchatfun",
   storageBucket: "vitchatfun.appspot.com",
   messagingSenderId: "534399167962",
-  appId: "1:534399167962:web:b204667198d1ba858d64e3",
-  measurementId: "G-3F1ZF40D3N"
+  appId: "1:534399167962:web:b204667198d64e3",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// 🎯 Змінні
-let username = "";
-let currentGroup = "";
-let isLeader = false;
-
-const regScreen = document.getElementById("registration");
-const mainApp = document.getElementById("mainApp");
-const guestLoginBtn = document.getElementById("guestLoginBtn");
+const registration = document.getElementById("registration");
 const usernameInput = document.getElementById("usernameInput");
+const guestLoginBtn = document.getElementById("guestLoginBtn");
+const avatarList = document.getElementById("avatarList");
 
-guestLoginBtn.onclick = () => {
-  const name = usernameInput.value.trim();
-  if (!name) return alert("Введіть ім’я");
-  username = name;
-  regScreen.style.display = "none";
-  mainApp.style.display = "block";
-  activateTab('chat');
-};
+const mainApp = document.getElementById("mainApp");
+const tabButtons = document.querySelectorAll(".tab-btn");
+const tabContents = document.querySelectorAll(".tab-content");
 
-function activateTab(tabId) {
-  document.querySelectorAll('.tab-content').forEach(tc => {
-    tc.style.display = (tc.id === tabId) ? 'block' : 'none';
-  });
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.tab === tabId);
+let currentUser = null;
+let currentGroup = null;
+let currentGroupLeader = null;
+
+const chatMessages = document.getElementById("chatMessages");
+const usersUl = document.getElementById("usersUl");
+const usersCount = document.getElementById("usersCount");
+
+const messageInput = document.getElementById("messageInput");
+const sendMessageBtn = document.getElementById("sendMessageBtn");
+
+const createGroupBtn = document.getElementById("createGroupBtn");
+const joinGroupBtn = document.getElementById("joinGroupBtn");
+
+const createGroupForm = document.getElementById("createGroupForm");
+const joinGroupForm = document.getElementById("joinGroupForm");
+const groupSelection = document.getElementById("groupSelection");
+
+const createGroupName = document.getElementById("createGroupName");
+const createGroupPass = document.getElementById("createGroupPass");
+const confirmCreateGroupBtn = document.getElementById("confirmCreateGroupBtn");
+const cancelCreateGroupBtn = document.getElementById("cancelCreateGroupBtn");
+
+const joinGroupName = document.getElementById("joinGroupName");
+const joinGroupPass = document.getElementById("joinGroupPass");
+const confirmJoinGroupBtn = document.getElementById("confirmJoinGroupBtn");
+const cancelJoinGroupBtn = document.getElementById("cancelJoinGroupBtn");
+
+const chatRoom = document.getElementById("chatRoom");
+const currentGroupNameSpan = document.getElementById("currentGroupName");
+
+const leaveGroupBtn = document.getElementById("leaveGroupBtn");
+const deleteGroupBtn = document.getElementById("deleteGroupBtn");
+
+// Аватарки
+const avatarUrls = [
+  "https://randomuser.me/api/portraits/men/32.jpg",
+  "https://randomuser.me/api/portraits/women/44.jpg",
+  "https://randomuser.me/api/portraits/men/65.jpg",
+  "https://randomuser.me/api/portraits/women/12.jpg",
+  "https://randomuser.me/api/portraits/men/18.jpg",
+  "https://randomuser.me/api/portraits/women/25.jpg",
+  "https://randomuser.me/api/portraits/men/90.jpg",
+  "https://randomuser.me/api/portraits/women/80.jpg",
+  "https://randomuser.me/api/portraits/men/45.jpg",
+  "https://randomuser.me/api/portraits/women/52.jpg"
+];
+
+let selectedAvatarIndex = 0;
+
+function renderAvatars() {
+  avatarList.innerHTML = "";
+  avatarUrls.forEach((url, i) => {
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "avatar";
+    img.style.cursor = "pointer";
+    img.style.width = "48px";
+    img.style.height = "48px";
+    img.style.borderRadius = "50%";
+    img.style.border = i === selectedAvatarIndex ? "3px solid blue" : "2px solid gray";
+    img.style.marginRight = "5px";
+    img.addEventListener("click", () => {
+      selectedAvatarIndex = i;
+      renderAvatars();
+    });
+    avatarList.appendChild(img);
   });
 }
 
-// 🔁 Вкладки
-document.querySelectorAll(".tab-btn").forEach(btn => {
+guestLoginBtn.addEventListener("click", () => {
+  const username = usernameInput.value.trim();
+  if (!username) {
+    alert("Введіть ім'я!");
+    return;
+  }
+  currentUser = {
+    name: username,
+    avatar: avatarUrls[selectedAvatarIndex],
+    id: "user_" + Math.random().toString(36).substr(2, 9),
+  };
+  registration.style.display = "none";
+  mainApp.style.display = "block";
+  console.log("User logged in:", currentUser);
+});
+
+tabButtons.forEach(btn => {
   btn.addEventListener("click", () => {
-    activateTab(btn.dataset.tab);
+    tabButtons.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    const target = btn.getAttribute("data-tab");
+    tabContents.forEach(tc => (tc.style.display = tc.id === target ? "block" : "none"));
   });
 });
 
-// 📦 Чат
-const groupSelection = document.getElementById("groupSelection");
-const createGroupForm = document.getElementById("createGroupForm");
-const joinGroupForm = document.getElementById("joinGroupForm");
-const chatRoom = document.getElementById("chatRoom");
-
-document.getElementById("createGroupBtn").onclick = () => {
+// Створення групи
+createGroupBtn.onclick = () => {
   groupSelection.style.display = "none";
   createGroupForm.style.display = "block";
 };
-document.getElementById("cancelCreateGroupBtn").onclick = () => {
+cancelCreateGroupBtn.onclick = () => {
   createGroupForm.style.display = "none";
   groupSelection.style.display = "block";
+  createGroupName.value = "";
+  createGroupPass.value = "";
 };
-document.getElementById("joinGroupBtn").onclick = () => {
+
+// Приєднання до групи
+joinGroupBtn.onclick = () => {
   groupSelection.style.display = "none";
   joinGroupForm.style.display = "block";
 };
-document.getElementById("cancelJoinGroupBtn").onclick = () => {
+cancelJoinGroupBtn.onclick = () => {
   joinGroupForm.style.display = "none";
   groupSelection.style.display = "block";
+  joinGroupName.value = "";
+  joinGroupPass.value = "";
 };
 
-// ✅ Створити групу
-document.getElementById("confirmCreateGroupBtn").onclick = async () => {
-  const name = document.getElementById("createGroupName").value.trim();
-  const pass = document.getElementById("createGroupPass").value.trim();
-  if (!name) return alert("Введіть назву групи");
+confirmCreateGroupBtn.onclick = async () => {
+  const groupName = createGroupName.value.trim();
+  if (!groupName) {
+    alert("Введіть назву групи");
+    return;
+  }
+  const password = createGroupPass.value;
 
-  const groupRef = ref(db, "groups/" + name);
-  onValue(groupRef, snap => {
-    if (snap.exists()) {
-      alert("Група вже існує");
-    } else {
-      set(groupRef, {
-        password: pass || null,
-        leader: username,
-        users: { [username]: true },
-        messages: {}
-      });
-      joinGroup(name);
-    }
-  }, { onlyOnce: true });
+  const groupRef = ref(db, `groups/${groupName}`);
+  const snapshot = await new Promise(resolve => {
+    onValue(groupRef, snap => resolve(snap), { onlyOnce: true });
+  });
+
+  if (snapshot.exists()) {
+    alert("Група з такою назвою вже існує");
+    return;
+  }
+
+  await set(groupRef, {
+    password: password || "",
+    leaderId: currentUser.id,
+    users: {
+      [currentUser.id]: {
+        name: currentUser.name,
+        avatar: currentUser.avatar,
+      }
+    },
+    messages: {}
+  });
+
+  enterGroup(groupName);
 };
 
-// 🔓 Приєднатись
-document.getElementById("confirmJoinGroupBtn").onclick = async () => {
-  const name = document.getElementById("joinGroupName").value.trim();
-  const pass = document.getElementById("joinGroupPass").value.trim();
+confirmJoinGroupBtn.onclick = async () => {
+  const groupName = joinGroupName.value.trim();
+  if (!groupName) {
+    alert("Введіть назву групи");
+    return;
+  }
+  const password = joinGroupPass.value;
 
-  const groupRef = ref(db, "groups/" + name);
-  onValue(groupRef, snap => {
-    if (!snap.exists()) return alert("Такої групи немає");
-    const data = snap.val();
-    if (data.password && data.password !== pass) return alert("Невірний пароль");
+  const groupRef = ref(db, `groups/${groupName}`);
+  const snapshot = await new Promise(resolve => {
+    onValue(groupRef, snap => resolve(snap), { onlyOnce: true });
+  });
 
-    update(ref(db, `groups/${name}/users`), {
-      [username]: true
-    });
-    joinGroup(name);
-  }, { onlyOnce: true });
+  if (!snapshot.exists()) {
+    alert("Такої групи не існує");
+    return;
+  }
+
+  const groupData = snapshot.val();
+  if (groupData.password !== password) {
+    alert("Неправильний пароль");
+    return;
+  }
+
+  const userRef = ref(db, `groups/${groupName}/users/${currentUser.id}`);
+  await set(userRef, {
+    name: currentUser.name,
+    avatar: currentUser.avatar
+  });
+
+  enterGroup(groupName);
 };
 
-function joinGroup(name) {
-  currentGroup = name;
+function enterGroup(groupName) {
+  currentGroup = groupName;
+  currentGroupNameSpan.textContent = groupName;
   groupSelection.style.display = "none";
   createGroupForm.style.display = "none";
   joinGroupForm.style.display = "none";
-  chatRoom.style.display = "flex";
+  chatRoom.style.display = "block";
 
-  document.getElementById("currentGroupName").textContent = name;
+  const groupLeaderRef = ref(db, `groups/${currentGroup}/leaderId`);
+  onValue(groupLeaderRef, snap => {
+    currentGroupLeader = snap.val();
+    deleteGroupBtn.style.display = currentUser.id === currentGroupLeader ? "inline-block" : "none";
+  });
 
-  // Чи лідер
-  onValue(ref(db, `groups/${name}/leader`), snap => {
-    isLeader = snap.val() === username;
-    document.getElementById("kickUserBtn").style.display = isLeader ? "inline-block" : "none";
-    document.getElementById("deleteGroupBtn").style.display = isLeader ? "inline-block" : "none";
-  }, { onlyOnce: true });
-
-  listenToChat(name);
-  listenToUsers(name);
+  listenMessages();
+  listenUsers();
 }
 
-// 📡 Слухачі
-let msgListener, userListener;
+sendMessageBtn.onclick = async () => {
+  const text = messageInput.value.trim();
+  if (!text || !currentGroup) return;
 
-function listenToChat(name) {
-  const msgRef = ref(db, `groups/${name}/messages`);
-  msgListener = onValue(msgRef, snap => {
-    const chat = document.getElementById("chatMessages");
-    chat.innerHTML = "";
-    if (!snap.exists()) return;
-    Object.values(snap.val()).forEach(m => {
+  const messagesRef = ref(db, `groups/${currentGroup}/messages`);
+  const newMsgRef = push(messagesRef);
+  await set(newMsgRef, {
+    userId: currentUser.id,
+    name: currentUser.name,
+    avatar: currentUser.avatar,
+    text,
+    timestamp: Date.now(),
+  });
+
+  messageInput.value = "";
+};
+
+function listenMessages() {
+  const messagesRef = ref(db, `groups/${currentGroup}/messages`);
+  onValue(messagesRef, snapshot => {
+    chatMessages.innerHTML = "";
+    const data = snapshot.val();
+    if (!data) return;
+
+    const sortedMessages = Object.entries(data).sort((a, b) => a[1].timestamp - b[1].timestamp);
+
+    for (const [msgId, msg] of sortedMessages) {
       const div = document.createElement("div");
-      div.textContent = `${m.user}: ${m.text}`;
-      div.className = "message " + (m.user === username ? "self" : "other");
-      chat.appendChild(div);
-    });
-    chat.scrollTop = chat.scrollHeight;
+      div.classList.add("message");
+      div.classList.add(msg.userId === currentUser.id ? "self" : "other");
+
+      div.innerHTML = `
+        <img src="${msg.avatar}" alt="avatar" style="width:30px;height:30px;border-radius:50%;vertical-align:middle;margin-right:8px;">
+        <b>${msg.name}:</b> ${msg.text}
+      `;
+      chatMessages.appendChild(div);
+    }
+    chatMessages.scrollTop = chatMessages.scrollHeight;
   });
 }
 
-function listenToUsers(name) {
-  const usersRef = ref(db, `groups/${name}/users`);
-  userListener = onValue(usersRef, snap => {
-    const list = document.getElementById("usersUl");
-    list.innerHTML = "";
-    const users = snap.val() || {};
-    document.getElementById("usersCount").textContent = Object.keys(users).length;
-    for (let u in users) {
+function listenUsers() {
+  const usersRef = ref(db, `groups/${currentGroup}/users`);
+  onValue(usersRef, snapshot => {
+    const users = snapshot.val() || {};
+    usersUl.innerHTML = "";
+    const count = Object.keys(users).length;
+    usersCount.textContent = count;
+
+    for (const [userId, user] of Object.entries(users)) {
       const li = document.createElement("li");
-      li.textContent = u;
-      if (isLeader && u !== username) {
-        const kick = document.createElement("button");
-        kick.textContent = "Вигнати";
-        kick.onclick = () => kickUser(u);
-        li.appendChild(kick);
+      li.innerHTML = `
+        <img src="${user.avatar}" alt="avatar" style="width:24px;height:24px;border-radius:50%;vertical-align:middle;margin-right:6px;">
+        ${user.name}
+      `;
+
+      if (currentUser.id === currentGroupLeader && userId !== currentUser.id) {
+        const kickBtn = document.createElement("button");
+        kickBtn.textContent = "Вигнати";
+        kickBtn.style.marginLeft = "8px";
+        kickBtn.onclick = () => kickUser(userId);
+        li.appendChild(kickBtn);
       }
-      list.appendChild(li);
+
+      usersUl.appendChild(li);
     }
   });
 }
 
-// 💬 Надіслати повідомлення
-document.getElementById("sendMessageBtn").onclick = () => {
-  const text = document.getElementById("messageInput").value.trim();
-  if (!text) return;
-  const msgRef = push(ref(db, `groups/${currentGroup}/messages`));
-  set(msgRef, {
-    user: username,
-    text
-  });
-  document.getElementById("messageInput").value = "";
-};
-
-// ❌ Вийти
-document.getElementById("leaveGroupBtn").onclick = () => {
-  update(ref(db, `groups/${currentGroup}/users`), { [username]: null });
-  currentGroup = "";
-  chatRoom.style.display = "none";
-  groupSelection.style.display = "block";
-  clearListeners();
-};
-
-// ❌ Видалити
-document.getElementById("deleteGroupBtn").onclick = () => {
-  if (!isLeader) return;
-  if (!confirm("Видалити групу повністю?")) return;
-  remove(ref(db, `groups/${currentGroup}`));
-  currentGroup = "";
-  chatRoom.style.display = "none";
-  groupSelection.style.display = "block";
-  clearListeners();
-};
-
-// ❌ Вигнати
-function kickUser(user) {
-  update(ref(db, `groups/${currentGroup}/users`), { [user]: null });
+async function kickUser(userId) {
+  if (!confirm("Ви впевнені, що хочете вигнати цього користувача?")) return;
+  await remove(ref(db, `groups/${currentGroup}/users/${userId}`));
 }
 
-function clearListeners() {
-  if (msgListener) msgListener();
-  if (userListener) userListener();
+leaveGroupBtn.onclick = async () => {
+  if (!currentGroup) return;
+  await remove(ref(db, `groups/${currentGroup}/users/${currentUser.id}`));
+  resetToGroupSelection();
+};
+
+deleteGroupBtn.onclick = async () => {
+  if (!confirm("Ви впевнені, що хочете видалити групу? Це назавжди.")) return;
+  await remove(ref(db, `groups/${currentGroup}`));
+  resetToGroupSelection();
+};
+
+function resetToGroupSelection() {
+  currentGroup = null;
+  chatRoom.style.display = "none";
+  groupSelection.style.display = "block";
+  chatMessages.innerHTML = "";
+  usersUl.innerHTML = "";
+  usersCount.textContent = "0";
 }
+
+renderAvatars();

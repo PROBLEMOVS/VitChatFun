@@ -1,91 +1,72 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Гостьовий чат</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VitChatFun</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<div id="registration">
-  <h2>Вхід як гість</h2>
-  <input id="usernameInput" placeholder="Введіть ім'я" />
+<div id="registration" class="center-box">
+  <h2>Реєстрація</h2>
+  <input type="text" id="usernameInput" placeholder="Введіть ім'я" />
+
+  <div class="avatar-list" id="avatarList"></div>
+
   <button id="guestLoginBtn">Увійти</button>
 </div>
 
 <div id="mainApp" style="display:none;">
-  <header>
-    <nav>
-      <button class="tab-btn" data-tab="chat">Чат</button>
-      <button class="tab-btn" data-tab="news">Новини</button>
-      <button class="tab-btn" data-tab="settings">Налаштування</button>
-    </nav>
-  </header>
+  <div class="top-bar">
+    <button class="tab-btn active" data-tab="groupTab">Групи</button>
+    <button class="tab-btn" data-tab="chatTab">Чат</button>
+  </div>
 
-  <main>
-    <section id="chat" class="tab-content" style="display:none;">
-      <div id="groupSelection">
-        <button id="createGroupBtn">Створити групу</button>
-        <button id="joinGroupBtn">Приєднатись до групи</button>
-      </div>
+  <div id="groupTab" class="tab-content" style="display:block; padding: 10px;">
+    <div id="groupSelection" class="group-controls">
+      <button id="createGroupBtn">Створити групу</button>
+      <button id="joinGroupBtn">Приєднатися до групи</button>
+    </div>
 
-      <div id="createGroupForm" style="display:none;">
-        <h3>Створити групу</h3>
-        <input id="createGroupName" placeholder="Назва групи" />
-        <input id="createGroupPass" placeholder="Пароль (опціонально)" type="password" />
-        <button id="confirmCreateGroupBtn">Створити</button>
-        <button id="cancelCreateGroupBtn">Відміна</button>
-      </div>
+    <div id="createGroupForm" class="group-controls" style="display:none;">
+      <input type="text" id="createGroupName" placeholder="Назва групи" />
+      <input type="password" id="createGroupPass" placeholder="Пароль (опціонально)" />
+      <button id="confirmCreateGroupBtn">Створити</button>
+      <button id="cancelCreateGroupBtn">Скасувати</button>
+    </div>
 
-      <div id="joinGroupForm" style="display:none;">
-        <h3>Приєднатись до групи</h3>
-        <input id="joinGroupName" placeholder="Назва групи" />
-        <input id="joinGroupPass" placeholder="Пароль (якщо є)" type="password" />
-        <button id="confirmJoinGroupBtn">Приєднатись</button>
-        <button id="cancelJoinGroupBtn">Відміна</button>
-      </div>
+    <div id="joinGroupForm" class="group-controls" style="display:none;">
+      <input type="text" id="joinGroupName" placeholder="Назва групи" />
+      <input type="password" id="joinGroupPass" placeholder="Пароль" />
+      <button id="confirmJoinGroupBtn">Приєднатися</button>
+      <button id="cancelJoinGroupBtn">Скасувати</button>
+    </div>
+  </div>
 
-      <div id="chatRoom" style="display:none; height: 80vh; display: flex; flex-direction: column;">
-        <div id="chatHeader" style="display:flex; justify-content: space-between; background:#444; padding:10px; color:white;">
-          <div><b>Група: </b><span id="currentGroupName"></span> (<span id="usersCount">0</span> учасників)</div>
-          <div>
-            <button id="leaveGroupBtn">Вийти з групи</button>
-            <button id="kickUserBtn" style="display:none;">Вигнати користувача</button>
-            <button id="deleteGroupBtn" style="display:none;">Видалити групу</button>
-          </div>
-        </div>
+  <div id="chatTab" class="tab-content" style="display:none;">
+    <div id="chatRoom" style="padding: 10px;">
+      <h3>Чат групи: <span id="currentGroupName"></span></h3>
 
-        <div id="chatMessages" style="flex-grow:1; overflow-y:auto; background:#222; padding:10px; margin-top:10px;"></div>
-
-        <div style="margin-top:10px; display:flex;">
-          <input id="messageInput" placeholder="Введіть повідомлення..." style="flex-grow:1; padding:10px; border-radius:5px; border:none;"/>
-          <button id="sendMessageBtn" style="margin-left:10px; padding:10px 20px; border:none; border-radius:5px; background:#555; color:white; cursor:pointer;">Відправити</button>
-        </div>
-
-        <div id="usersList" style="margin-top:10px; background:#333; color:white; padding:10px; border-radius:5px;">
-          <h4>Учасники групи:</h4>
-          <ul id="usersUl"></ul>
+      <div id="chatArea">
+        <div id="chatMessages"></div>
+        <div id="userSidebar">
+          <h4>Користувачі (<span id="usersCount">0</span>):</h4>
+          <ul id="usersUl" style="list-style:none; padding:0; margin:0;"></ul>
         </div>
       </div>
 
-    </section>
+      <div id="chatInputArea">
+        <input type="text" id="messageInput" placeholder="Введіть повідомлення..." autocomplete="off" />
+        <button id="sendMessageBtn">Відправити</button>
+      </div>
 
-    <section id="news" class="tab-content" style="display:none;">
-      <h2>Новини</h2>
-      <p>Новини будуть тут</p>
-    </section>
-
-    <section id="settings" class="tab-content" style="display:none;">
-      <h2>Налаштування</h2>
-      <p>Налаштування будуть тут</p>
-    </section>
-  </main>
+      <button id="leaveGroupBtn" style="margin-top: 10px;">Вийти з групи</button>
+      <button id="deleteGroupBtn" style="margin-top: 10px; display:none;">Видалити групу</button>
+    </div>
+  </div>
 </div>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
-<script src="script.js"></script>
-<script type="module" src="script.js"></script>
+<script src="script1.js"></script>
+<script type="module" src="./script.js"></script>
 </body>
 </html>
