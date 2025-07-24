@@ -8,65 +8,84 @@
 </head>
 <body>
 
-<div id="registration" class="center-box">
-  <h2>Реєстрація</h2>
-  <input type="text" id="usernameInput" placeholder="Введіть ім'я" />
-
-  <div class="avatar-list" id="avatarList"></div>
-
-  <button id="guestLoginBtn">Увійти</button>
-</div>
-
-<div id="mainApp" style="display:none;">
-  <div class="top-bar">
-    <button class="tab-btn active" data-tab="groupTab">Групи</button>
-    <button class="tab-btn" data-tab="chatTab">Чат</button>
+  <!-- Реєстрація/вхід -->
+  <div id="registration" class="center-box">
+    <h2>Вхід у чат</h2>
+    <input id="usernameInput" type="text" placeholder="Введіть ім'я" />
+    <div id="avatarList" class="avatar-list"></div>
+    <img id="selectedAvatar" src="" alt="Selected avatar" style="width:48px; height:48px; border-radius:50%; margin: 10px auto; display: block;" />
+    <button id="guestLoginBtn">Увійти</button>
   </div>
 
-  <div id="groupTab" class="tab-content" style="display:block; padding: 10px;">
-    <div id="groupSelection" class="group-controls">
-      <button id="createGroupBtn">Створити групу</button>
-      <button id="joinGroupBtn">Приєднатися до групи</button>
+  <!-- Основний додаток -->
+  <div id="mainApp" style="display:none; max-width: 900px; margin: 20px auto;">
+
+    <!-- Вкладки -->
+    <div class="top-bar">
+      <button class="tab-btn active" data-tab="groupSelectionTab">Вибір групи</button>
+      <button class="tab-btn" data-tab="chatTab">Чат</button>
     </div>
 
-    <div id="createGroupForm" class="group-controls" style="display:none;">
-      <input type="text" id="createGroupName" placeholder="Назва групи" />
-      <input type="password" id="createGroupPass" placeholder="Пароль (опціонально)" />
-      <button id="confirmCreateGroupBtn">Створити</button>
-      <button id="cancelCreateGroupBtn">Скасувати</button>
+    <!-- Вибір групи -->
+    <div id="groupSelectionTab" class="tab-content" style="display:block; padding: 10px;">
+      <div id="groupSelection" class="center-box">
+        <h3>Виберіть дію</h3>
+        <button id="createGroupBtn">Створити групу</button>
+        <button id="joinGroupBtn">Приєднатися до групи</button>
+      </div>
+
+      <!-- Форма створення групи -->
+      <div id="createGroupForm" class="center-box" style="display:none;">
+        <h3>Створення групи</h3>
+        <input id="createGroupName" type="text" placeholder="Назва групи" />
+        <input id="createGroupPass" type="password" placeholder="Пароль (не обов’язково)" />
+        <button id="confirmCreateGroupBtn">Створити</button>
+        <button id="cancelCreateGroupBtn">Скасувати</button>
+      </div>
+
+      <!-- Форма приєднання до групи -->
+      <div id="joinGroupForm" class="center-box" style="display:none;">
+        <h3>Приєднання до групи</h3>
+        <input id="joinGroupName" type="text" placeholder="Назва групи" />
+        <input id="joinGroupPass" type="password" placeholder="Пароль" />
+        <button id="confirmJoinGroupBtn">Приєднатися</button>
+        <button id="cancelJoinGroupBtn">Скасувати</button>
+      </div>
     </div>
 
-    <div id="joinGroupForm" class="group-controls" style="display:none;">
-      <input type="text" id="joinGroupName" placeholder="Назва групи" />
-      <input type="password" id="joinGroupPass" placeholder="Пароль" />
-      <button id="confirmJoinGroupBtn">Приєднатися</button>
-      <button id="cancelJoinGroupBtn">Скасувати</button>
-    </div>
-  </div>
+    <!-- Чат -->
+    <div id="chatTab" class="tab-content" style="display:none;">
+      <div class="center-box" style="padding: 10px;">
+        <h2>Група: <span id="currentGroupName"></span></h2>
+        <div id="chatArea" style="display:flex; gap: 10px;">
 
-  <div id="chatTab" class="tab-content" style="display:none;">
-    <div id="chatRoom" style="padding: 10px;">
-      <h3>Чат групи: <span id="currentGroupName"></span></h3>
+          <div id="chatMessages" style="flex:3; overflow-y:auto; height:300px; background:#333; padding:10px; border-radius:5px;">
+            <!-- Повідомлення -->
+          </div>
 
-      <div id="chatArea">
-        <div id="chatMessages"></div>
-        <div id="userSidebar">
-          <h4>Користувачі (<span id="usersCount">0</span>):</h4>
-          <ul id="usersUl" style="list-style:none; padding:0; margin:0;"></ul>
+          <div id="userSidebar" style="flex:1; background:#222; padding:10px; border-radius:5px;">
+            <h4>Користувачі (<span id="usersCount">0</span>):</h4>
+            <ul id="usersUl" style="list-style:none; padding-left:0;"></ul>
+          </div>
+        </div>
+
+        <div id="chatInputArea" style="display:flex; padding:10px; gap:10px; margin-top:10px;">
+          <input id="messageInput" type="text" placeholder="Введіть повідомлення" style="flex:1;" />
+          <button id="sendMessageBtn">Відправити</button>
+        </div>
+
+        <div style="margin-top: 10px;">
+          <button id="leaveGroupBtn">Вийти з групи</button>
+          <button id="deleteGroupBtn" style="display:none; background:#a00; color:#fff;">Видалити групу</button>
         </div>
       </div>
-
-      <div id="chatInputArea">
-        <input type="text" id="messageInput" placeholder="Введіть повідомлення..." autocomplete="off" />
-        <button id="sendMessageBtn">Відправити</button>
-      </div>
-
-      <button id="leaveGroupBtn" style="margin-top: 10px;">Вийти з групи</button>
-      <button id="deleteGroupBtn" style="margin-top: 10px; display:none;">Видалити групу</button>
     </div>
+
   </div>
-</div>
-<script src="script1.js"></script>
-<script type="module" src="./script.js"></script>
-</body>
-</html>
+  <script src="script1.js"></script>
+<script src="script.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <!-- Твій JS код -->
