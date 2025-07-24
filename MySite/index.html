@@ -1,52 +1,91 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Гостьовий Вхід</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Гостьовий чат</title>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Екран входу з іменем -->
-  <div class="container" id="login-screen">
-    <h2>Введіть ім’я</h2>
-    <input type="text" id="username" placeholder="Ваше ім’я" />
-    <br />
-    <button onclick="enterSite()">Увійти</button>
-  </div>
 
-  <!-- Вибір групи -->
-  <div class="container hidden" id="group-selection">
-    <h2>Створити нову групу</h2>
-    <input type="text" id="new-group-name" placeholder="Назва групи" />
-    <br />
-    <button onclick="createGroup()">Створити</button>
+<div id="registration">
+  <h2>Вхід як гість</h2>
+  <input id="usernameInput" placeholder="Введіть ім'я" />
+  <button id="guestLoginBtn">Увійти</button>
+</div>
 
-    <h2>Або приєднатись до існуючої</h2>
-    <input type="text" id="join-group-name" placeholder="Назва групи" />
-    <br />
-    <button onclick="joinGroup()">Приєднатись</button>
-  </div>
-
-  <!-- Головне меню -->
-  <div class="container hidden" id="main-menu">
+<div id="mainApp" style="display:none;">
+  <header>
     <nav>
-      <ul>
-        <li onclick="showSection('chat')">💬 Чат</li>
-        <li onclick="showSection('news')">📰 Новини</li>
-        <li onclick="showSection('settings')">⚙️ Налаштування</li>
-      </ul>
+      <button class="tab-btn" data-tab="chat">Чат</button>
+      <button class="tab-btn" data-tab="news">Новини</button>
+      <button class="tab-btn" data-tab="settings">Налаштування</button>
     </nav>
-  </div>
+  </header>
 
-  <!-- Чат -->
-  <div id="chat-section" class="container hidden" style="display: flex; flex-direction: column;">
-    <h2 id="chat-header"></h2>
-    <div id="chat-messages"></div>
-    <input type="text" id="message-input" placeholder="Введіть повідомлення..." />
-    <button onclick="sendMessage()">Відправити</button>
-  </div>
+  <main>
+    <section id="chat" class="tab-content" style="display:none;">
+      <div id="groupSelection">
+        <button id="createGroupBtn">Створити групу</button>
+        <button id="joinGroupBtn">Приєднатись до групи</button>
+      </div>
 
-  <script src="script.js"></script>
+      <div id="createGroupForm" style="display:none;">
+        <h3>Створити групу</h3>
+        <input id="createGroupName" placeholder="Назва групи" />
+        <input id="createGroupPass" placeholder="Пароль (опціонально)" type="password" />
+        <button id="confirmCreateGroupBtn">Створити</button>
+        <button id="cancelCreateGroupBtn">Відміна</button>
+      </div>
+
+      <div id="joinGroupForm" style="display:none;">
+        <h3>Приєднатись до групи</h3>
+        <input id="joinGroupName" placeholder="Назва групи" />
+        <input id="joinGroupPass" placeholder="Пароль (якщо є)" type="password" />
+        <button id="confirmJoinGroupBtn">Приєднатись</button>
+        <button id="cancelJoinGroupBtn">Відміна</button>
+      </div>
+
+      <div id="chatRoom" style="display:none; height: 80vh; display: flex; flex-direction: column;">
+        <div id="chatHeader" style="display:flex; justify-content: space-between; background:#444; padding:10px; color:white;">
+          <div><b>Група: </b><span id="currentGroupName"></span> (<span id="usersCount">0</span> учасників)</div>
+          <div>
+            <button id="leaveGroupBtn">Вийти з групи</button>
+            <button id="kickUserBtn" style="display:none;">Вигнати користувача</button>
+            <button id="deleteGroupBtn" style="display:none;">Видалити групу</button>
+          </div>
+        </div>
+
+        <div id="chatMessages" style="flex-grow:1; overflow-y:auto; background:#222; padding:10px; margin-top:10px;"></div>
+
+        <div style="margin-top:10px; display:flex;">
+          <input id="messageInput" placeholder="Введіть повідомлення..." style="flex-grow:1; padding:10px; border-radius:5px; border:none;"/>
+          <button id="sendMessageBtn" style="margin-left:10px; padding:10px 20px; border:none; border-radius:5px; background:#555; color:white; cursor:pointer;">Відправити</button>
+        </div>
+
+        <div id="usersList" style="margin-top:10px; background:#333; color:white; padding:10px; border-radius:5px;">
+          <h4>Учасники групи:</h4>
+          <ul id="usersUl"></ul>
+        </div>
+      </div>
+
+    </section>
+
+    <section id="news" class="tab-content" style="display:none;">
+      <h2>Новини</h2>
+      <p>Новини будуть тут</p>
+    </section>
+
+    <section id="settings" class="tab-content" style="display:none;">
+      <h2>Налаштування</h2>
+      <p>Налаштування будуть тут</p>
+    </section>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
+<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>
